@@ -1,0 +1,153 @@
+import random
+import math
+
+#To generate random prime less than N
+
+
+def powpow(x, y) :
+	res = 1   
+	if (x == 0) :
+	    return 0
+	while (y > 0) :
+	    if ((y & 1) == 1) :
+	        res = (res * x)
+	    y = y >> 1
+	    x = (x * x)
+	return res
+     
+
+def randPrime(N):
+	primes = []
+	for q in range(2,N+1):
+		if(isPrime(q)):
+			primes.append(q)
+	return primes[random.randint(0,len(primes)-1)]
+
+# To check if a number is prime
+
+def val(s):
+	return ord(s)-ord('A')
+
+def isPrime(q):
+	if(q > 1):
+		for i in range(2, int(math.sqrt(q)) + 1):
+			if (q % i == 0):
+				return False
+		return True
+	else:
+		return False
+
+#pattern matching
+def randPatternMatch(eps,p,x):
+	N = findN(eps,len(p))
+	q = randPrime(N)
+	# print(q)
+	return modPatternMatch(q,p,x)
+
+#pattern matching with wildcard
+def randPatternMatchWildcard(eps,p,x):
+	N = findN(eps,len(p))
+	q = randPrime(N)
+	return modPatternMatchWildcard(q,p,x)
+
+# return appropriate N that satisfies the error bounds
+
+
+def binarysearch(q):
+	l = 0
+	r = q
+	while(l<r and r-l>=0.1):
+		mid = (l+r)/2
+		if(mid/(2*math.log2(mid)) > q):
+			r = mid
+		else:
+			l = mid
+	return math.ceil(r)
+
+def findN(eps,m):
+	n = math.ceil((m-1)*(math.log2(26)))
+	# if(eps>0):
+	# 	q = powpow(2, math.ceil(n/eps))
+	# else:
+	# 	q = 2, 26*(26**m)
+	q = 0
+	if(eps>0):
+		q = n/eps
+	else:
+		q = powpow(26, m)
+	# print(math.ceil(q))
+	if(eps==0):
+		return q
+	return binarysearch(q)
+
+# Return sorted list of starting indices where p matches x
+def modPatternMatch(q,p,x):
+	n = len(x)
+	m = len(p)
+	want = 0
+	for i in range(0, m):
+		pow26 = pow(26, m-i-1, q)
+		# pow26 = powpow(26, m-i-1)
+		want = want+ pow26*val(p[i])
+		want = want%q
+	cur = 0
+	for i in range(0, m):
+		# pow26 = pow(26, m-i-1, q)
+		pow26 = pow(26, m-i-1)
+		cur = cur+ pow26*val(x[i])
+		cur=cur%q
+	ans = []
+	# print('cur', cur)
+	if cur==want:
+		ans.append(0)
+	for i in range(n-m):
+		cur-=val(x[i])*pow(26, m-1, q)
+		cur*=26
+		cur = cur%q
+		cur+=val(x[i+m])
+		cur%=q
+		if cur == want:
+			ans.append(i+1)
+	return ans
+
+# Return sorted list of starting indices where p matches x
+def modPatternMatchWildcard(q,p,x):
+	n = len(x)
+	m = len(p)
+	qind = -1
+	for i in range(0, m):
+		if(p[i]=='?'):
+			qind = i
+			break
+	want = 0
+	for i in range(0, m):
+		if(i!=qind):
+			pow26 = pow(26, m-i-1, q)
+			want = want+ pow26*val(p[i])
+			want = want%q
+	cur = 0
+	for i in range(0, m):
+		if i==qind:
+			continue
+		pow26 = pow(26, m-i-1, q)
+		cur = cur+ pow26*val(x[i])
+		cur=cur%q
+	ans = []
+	if cur==want:
+		ans.append(0)
+	for i in range(1, n-m+1):
+		cur = cur-pow(26, m-1, q)*val(x[i-1])
+		cur%=q
+		cur+= pow(26, m-qind-1, q)*val(x[i+qind-1])
+		if(m-qind-2>=0):
+			cur-=pow(26, m-qind-2, q)*val(x[i+qind])
+		cur%=q
+		cur*=26
+		cur = cur%q
+		if(m-qind-2>=0):
+			cur+=val(x[i+m-1])
+		cur%=q
+		if cur == want:
+			ans.append(i)
+	return ans
+

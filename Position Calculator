@@ -1,0 +1,84 @@
+class Stack:
+    def __init__(self):
+        self.lis = []
+        self.size = 0
+        self.curptr = -1
+    
+    def push(self, X):
+        if(self.size == 0):
+            self.lis = [0]
+            self.size = 1
+        elif(self.curptr == self.size-1):
+            newlis = [0]*(2*self.size)
+            for i in range(0, self.size):
+                newlis[i] = self.lis[i]
+            self.lis = newlis
+            self.size = 2*self.size
+        self.curptr+=1
+        self.lis[self.curptr] = X
+
+    def pop(self):
+        if(self.curptr>=0):
+            self.curptr-=1
+
+
+    def is_empty(self):
+        return (self.curptr==-1)
+
+    def last(self):
+        if(self.curptr == -1):
+            return None
+        else:
+            return self.lis[self.curptr]
+    def sizeofs(self):
+        return self.curptr+1
+
+
+
+def findPositionandDistance(str):
+    s = Stack()
+    s.push([0,0,0,0])
+    for i in range(0, len(str)):
+        if(str[i].isnumeric()):
+            s.push(int(str[i]))
+        if(str[i] == "("):
+            s.push([0,0,0,0])
+        elif str[i]==")":
+            ele = s.last()
+            s.pop()
+            if(type(s.last()) == int):
+                n = 0
+                pow = 0
+                while(type(s.last())==int):
+                    n = n + (10**pow)*s.last()
+                    s.pop()
+                    pow+=1
+
+                for j in range(0, 4):
+                    ele[j] = ele[j]*n
+            for j in range(0, 4):
+                ele[j] = ele[j]+s.last()[j]
+            s.pop()
+            s.push(ele)
+
+        elif (str[i]=="X"or"Y"or"Z"):
+            if(str[i]=='X' and str[i-1]=="+"):
+                s.last()[0]+=1
+                s.last()[3]+=1
+            if(str[i]=='X' and str[i-1]=="-"):
+                s.last()[0]-=1
+                s.last()[3]+=1
+            if(str[i]=='Y' and str[i-1]=="+"):
+                s.last()[1]+=1
+                s.last()[3]+=1
+            if(str[i]=='Y' and str[i-1]=="-"):
+                s.last()[1]-=1
+                s.last()[3]+=1
+            if(str[i]=='Z' and str[i-1]=="+"):
+                s.last()[2]+=1
+                s.last()[3]+=1
+            if(str[i]=='Z' and str[i-1]=="-"):
+                s.last()[2]-=1
+                s.last()[3]+=1
+    return s.last()
+
